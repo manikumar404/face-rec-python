@@ -37,74 +37,19 @@ def print_request(request):
         print(body_sub_image_data.decode('utf-8'))
     # print(body_data[0:500] + b'...' + body_data[-500:]) # raw binary
 
-@app.route('/face_rec', methods=['POST', 'GET'])
+@app.route('/face_rec', methods=['POST'])
 def face_recognition():
     if request.method == 'POST':
-        # Print request url, headers and content
-        print_request(request)
-
-        # JSON data format
-        if request.is_json:
-            """ Sample data
-            {'file_format':'jpg', 'image_data': <base64 ascii string>}
-            """
-            # print('Request is a JSON format.')
-            json_data = request.get_json(cache=False)
-            file_format = json_data.get('file_format', None)
-            image_data = json_data.get('image_data', None)
-            if file_format not in ALLOWED_EXTENSIONS or image_data is None:
-                return '{"error":"Invalid JSON."}'
-
-            file = os.path.join(UPLOAD_FOLDER, 'image.' + file_format)
-            with open(file,'wb') as f:
-                # Note: Convert ascii string to binary string first, e.g. 'abc' to b'abc', before decode as base64 string.
-                f.write(base64.b64decode(image_data.encode('ascii'))) 
-        
-        # form data format
-        else: 
-            # check if the post request has the file part
-            if 'file' not in request.files:
-                print('No file part')
-                return redirect(request.url)
+        try:
             file = request.files.get('file')
-            # if user does not select file, browser also submit an empty part without filename
-            if file.filename == '':
-                print('No selected file')
-                return redirect(request.url)
+            name = face_rec(file)
+            return json.dumps({'email':name}), 200, {'ContentType':'application/json'}
 
-            if not allowed_file(file.filename):
-                return '{"error":"Invalid image file format."}'
-        
-        # Process image file
-        # Note file could be a filename or a file object.
-        name = face_rec(file)
-        resp_data = {'name': name }
+        except:
+            return json.dumps({'error':'error occurred!'}), 500, {'ContentType':'application/json'}
 
-        # get parameters from url if any.
-        # facial_features parameter:
-        param_features = request.args.get('facial_features', '')
-        if param_features.lower() == 'true':
-            facial_features = find_facial_features(file)
-            # append facial_features to resp_data
-            resp_data.update({'facial_features': facial_features})
-
-        # face_locations parameter:
-        param_locations = request.args.get('face_locations', '')
-        if param_locations.lower() == 'true':
-            face_locations = find_face_locations(file)
-            resp_data.update({'face_locations': face_locations})
-
-        return json.dumps(resp_data)
-
-    return '''
-    <!doctype html>
-    <title>Face Recognition</title>
-    <h1>Upload an image</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    '''
+   
+   
 
 @app.route('/face_match', methods=['POST', 'GET'])
 def face_match():
@@ -142,8 +87,8 @@ def face_match():
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World!'
+    return 'face recognition api'
 
 # Run in HTTP
 # When debug = True, code is reloaded on the fly while saved
-app.run(host='0.0.0.0', port='5001', debug=True)
+app.run(host='0.0.0.0', port='5001')

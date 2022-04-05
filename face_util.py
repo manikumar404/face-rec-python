@@ -19,7 +19,10 @@ def compare_faces(file1, file2):
 
 # Each face is tuple of (Name,sample image)    
 known_faces = [('Obama','sample_images/obama.jpg'),
-               ('Peter','sample_images/peter.jpg'),
+               ('02180411.cst@rub.edu.bt','sample_images/kza.jpeg'),
+               ('02180434.cst@rub.edu.bt','sample_images/yeshi.jpg'),
+               ('02180420.cst@rub.edu.bt','sample_images/rinchen.jpg'),
+               ('02180415.cst@rub.edu.bt','sample_images/mani.jpg'),
               ]
     
 def face_rec(file):
